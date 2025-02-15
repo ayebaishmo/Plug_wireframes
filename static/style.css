@@ -1,0 +1,11 @@
+.container {
+    width: 300px;
+    margin: auto;
+    text-align: center;
+}
+
+input, button {
+    display: block;
+    width: 100%;
+    margin: 10px 0;
+}

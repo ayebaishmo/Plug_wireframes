@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ ui.title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <img src="{{ ui.logo }}" alt="Logo">
+        <form action="">
+            {% for field in ui.form.fields %}
+            <label>{{ field }}</label>
+            <input type="text" name="{{ field.lower() }}">
+            {% endfor %}
+            <button type="submit">{{ ui.form.button }}</button>
+        </form>
+
+    </div>
+    
+</body>
+</html>
