@@ -7,48 +7,57 @@ import requests
 app = Flask(__name__)
 
 load_dotenv()
-FIGMA_FILE_ID = os.getenv("FIGMA_FILE_ID")
-FIGMA_API = os.getenv("FIGMA_API")
-gemini_api_key = os.getenv("GEMINI_API_KEY")
-genai.configure(api_key=gemini_api_key)
+
+FIGMA_FILE_ID = os.getenv("FIGMA_FILE_ID", "")
+FIGMA_ACCESS_TOKEN = os.getenv("FIGMA_ACCESS_TOKEN", "")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+
+if not FIGMA_FILE_ID or not FIGMA_ACCESS_TOKEN or not GEMINI_API_KEY:
+    raise ValueError("Missing required API keys. Check .env file!")
+
+genai.configure(api_key=GEMINI_API_KEY)
 
 
 def generate_wireframe(description):
+    """Generate wireframe structure using Gemini AI"""
     model = genai.GenerativeModel('gemini-2.0-flash')
     response = model.generate_content(f"Generate a UI wireframe structure for {description}")
     return response.text
 
-def send_to_figma(wireframe_data):
-    url = f"https://api.figma.com/v1/files/{FIGMA_FILE_ID}/components"
+
+def get_figma_file():
+    """Fetch Figma file data"""
+    url = f"https://api.figma.com/v1/files/{FIGMA_FILE_ID}"
 
     headers = {
-            "X-Figma-Token": FIGMA_API,
-            "Content-Type": "application/json"
-        }
-    data = {
-            "name": "Generated Wireframe",
-            "description": "Generated via AI",
-            "components": wireframe_data
-        }
+        "X-Figma-Token": FIGMA_ACCESS_TOKEN
+    }
 
-    response = requests.post(url, headers=headers, json=data)
-    print({response.content})
-    print({response.status_code})
-    return response.json()
+    response = requests.get(url, headers=headers)
+
+    if response.status_code == 200:
+        return response.json()
+    else:
+        print(f"Failed to retrieve file. Status code: {response.status_code}")
+        print(response.content)
+        return None
+
 
 @app.route("/", methods=["GET", "POST"])
 def index():
+    """Main page to input description and retrieve wireframe"""
     if request.method == "POST":
         description = request.form.get("description")
-        print(f"Received description: {description}")  # Debugging output
+        print(f"Received description: {description}")  
         
         wireframe_data = generate_wireframe(description)
         
-        figma_response = send_to_figma(wireframe_data)
+        figma_data = get_figma_file()  
         
-        return render_template("index.html", response=figma_response)
+        return render_template("index.html", response=figma_data, wireframe=wireframe_data)
     
     return render_template("index.html")
+
 
 if __name__ == "__main__":
     app.run(debug=True)
