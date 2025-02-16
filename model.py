@@ -3,7 +3,6 @@ import os
 import json
 from dotenv import load_dotenv
 
-# Load API key from .env
 load_dotenv()
 API_KEY = os.getenv("API_KEY")
 genai.configure(api_key=API_KEY)
@@ -13,27 +12,35 @@ model = genai.GenerativeModel("gemini-2.0-flash")
 
 def generate_wireframe(prompt):
     structured_prompt = f"""
-    Generate a wireframe description in JSON format for a {prompt}.
-    The JSON should have the following structure:
-    {{
-        "title": "Page Title",
-        "logo": "static/logo.png",
-        "form": {{
-            "fields": ["Username", "Password"],
-            "button": "Submit"
-        }}
-    }}
-    Return only valid JSON with no extra text.
+    Generate wireframe JSON with Excalidraw shapes for a {prompt}. Include:
+    - Logo as a rectangle
+    - Inputs as small rectangles with labels
+    - Submit button as a rectangle
+    The JSON should follow the Excalidraw data format.
     """
-
-    response = model.generate_content(structured_prompt)
     
     try:
-        return json.loads(response.text)
-    except json.JSONDecodeError:
-        print("Error: Gemini returned invalid JSON.")
-
-if __name__ == "__main__":
-    prompt = "login page with a form, a logo, and a submit button"
-    design_specs = generate_wireframe(prompt)
-    print(design_specs)
+        response = model.generate_content(structured_prompt)
+        
+        # Log the raw response to check for issues
+        print("Raw API Response:", response.text)
+        
+        # Try parsing the response text
+        wireframe_data = json.loads(response.text)
+        
+        # Debugging the type of the response
+        print(f"Response Type: {type(wireframe_data)}")
+        
+        # If the response is a list, wrap it in a dictionary
+        if isinstance(wireframe_data, list):
+            return {"elements": wireframe_data}
+        
+        # Return the response as is if it's an object
+        return wireframe_data
+    
+    except json.JSONDecodeError as e:
+        print(f"Error: Invalid JSON from Gemini - {str(e)}")
+        return {"error": "Invalid JSON response from Gemini"}
+    except Exception as e:
+        print(f"Error occurred: {e}")
+        return {"error": str(e)}

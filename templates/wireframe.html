@@ -3,21 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ ui.title }}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>{{ wireframe.title }}</title>
 </head>
 <body>
-    <div class="container">
-        <img src="{{ ui.logo }}" alt="Logo">
-        <form action="">
-            {% for field in ui.form.fields %}
-            <label>{{ field }}</label>
-            <input type="text" name="{{ field.lower() }}">
-            {% endfor %}
-            <button type="submit">{{ ui.form.button }}</button>
-        </form>
-
+    {% for element in wireframe.elements %}
+    <div>
+        {% if element.type == 'rectangle' %}
+            <p>Rectangle - ID: {{ element.id }} | X: {{ element.x }} | Y: {{ element.y }} | Width: {{ element.width }} | Height: {{ element.height }}</p>
+        {% elif element.type == 'text' %}
+            <p>Text - ID: {{ element.id }} | Text: {{ element.text }} | X: {{ element.x }} | Y: {{ element.y }}</p>
+        {% endif %}
     </div>
-    
-</body>
+{% endfor %}
+</body> 
 </html>
