@@ -16,5 +16,12 @@
         <h3>AI Response</h3>
         <pre>{{ response }}</pre>
     {% endif %}
+
+    {% if figma_file_id %}
+    <iframe src="https://www.figma.com/embed?embed_host=share&url=https://www.figma.com/file/{{ figma_file_id }}" width="800" height="600" allowfullscreen></iframe>
+    {% endif %}
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% endif %}
 </body>
 </html>
